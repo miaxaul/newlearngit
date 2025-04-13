@@ -74,7 +74,8 @@ jobs:
           aws s3 cp Dockerrun.aws.json s3://${{ env.S3_BUCKET }}/Dockerrun.aws.json-${{ env.PIPELINE_ID }}
 
   deploy-stage:
-    name: Staging Deploy to Elastic Beanstalk from Source
+    name: Staging Deploy
+    description: "Deploy to Staging Environment with Source Code"
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -124,7 +125,8 @@ jobs:
           echo "Deployment health: $HEALTH"
 
   deploy-prod:
-    name: ProductionDeploy to Elastic Beanstalk from Image
+    name: Production Deploy
+    description: "Deploy to Production Environment with Image from ECR"
     needs: build-and-push
     runs-on: ubuntu-latest
 
