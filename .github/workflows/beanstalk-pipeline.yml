@@ -70,8 +70,8 @@ jobs:
 
       - name: Upload Artifacts to S3
         run: |
-          aws s3 cp artifacts.zip s3://${{ env.S3_BUCKET }}/artifacts-${{ env.PIPELINE_ID }}.zip
-          aws s3 cp Dockerrun.aws.json s3://${{ env.S3_BUCKET }}/Dockerrun.aws.json-${{ env.PIPELINE_ID }}
+          aws s3 cp artifacts.zip s3://${{ env.S3_BUCKET }}/artifacts/${{ env.PIPELINE_ID }}/source-code.zip
+          aws s3 cp Dockerrun.aws.json s3://${{ env.S3_BUCKET }}/artifacts/${{ env.PIPELINE_ID }}/Dockerrun.aws.json
 
   deploy-stage:
     name: Staging Deploy #Deploy to Staging Environment with Source Code
@@ -92,7 +92,7 @@ jobs:
           aws elasticbeanstalk create-application-version \
             --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
             --version-label ${{ env.PIPELINE_ID }} \
-            --source-bundle S3Bucket="${{ env.S3_BUCKET }}",S3Key="artifacts-${{ env.PIPELINE_ID }}.zip" \
+            --source-bundle S3Bucket="${{ env.S3_BUCKET }}",S3Key="artifacts/${{ env.PIPELINE_ID }}/Dockerrun.aws.json" \
             --description "Deployment from GitHub Actions - ${{ github.run_id }}"
 
       - name: Deploy to Elastic Beanstalk
@@ -108,20 +108,20 @@ jobs:
             --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
             --environment-name ${{ env.EB_ENVIRONMENT_NAME_STAGE }}
 
-      - name: Get deployment status
-        run: |
-          STATUS=$(aws elasticbeanstalk describe-environments \
-            --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
-            --environment-names ${{ env.EB_ENVIRONMENT_NAME_STAGE }} \
-            --query "Environments[0].Status" \
-            --output text)
-          HEALTH=$(aws elasticbeanstalk describe-environments \
-            --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
-            --environment-names ${{ env.EB_ENVIRONMENT_NAME_STAGE }} \
-            --query "Environments[0].Health" \
-            --output text)
-          echo "Deployment status: $STATUS"
-          echo "Deployment health: $HEALTH"
+      # - name: Get deployment status
+      #   run: |
+      #     STATUS=$(aws elasticbeanstalk describe-environments \
+      #       --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
+      #       --environment-names ${{ env.EB_ENVIRONMENT_NAME_STAGE }} \
+      #       --query "Environments[0].Status" \
+      #       --output text)
+      #     HEALTH=$(aws elasticbeanstalk describe-environments \
+      #       --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
+      #       --environment-names ${{ env.EB_ENVIRONMENT_NAME_STAGE }} \
+      #       --query "Environments[0].Health" \
+      #       --output text)
+      #     echo "Deployment status: $STATUS"
+      #     echo "Deployment health: $HEALTH"
 
   deploy-prod:
     name: Production Deploy # Deploy to Production Environment with Image from ECR
@@ -142,7 +142,7 @@ jobs:
           aws elasticbeanstalk create-application-version \
             --application-name ${{ env.EB_APPLICATION_NAME_PROD }} \
             --version-label ${{ env.PIPELINE_ID }} \
-            --source-bundle S3Bucket="${{ env.S3_BUCKET }}",S3Key="artifacts-${{ env.PIPELINE_ID }}.zip" \
+            --source-bundle S3Bucket="${{ env.S3_BUCKET }}",S3Key="artifacts/${{ env.PIPELINE_ID }}/source-code.zip" \
             --description "Deployment from GitHub Actions - ${{ github.run_id }}"
       
       - name: Deploy to Elastic Beanstalk
@@ -158,16 +158,16 @@ jobs:
             --application-name ${{ env.EB_APPLICATION_NAME_PROD }} \
             --environment-name ${{ env.EB_ENVIRONMENT_NAME_PROD }}
 
-      - name: Get deployment status
-        run: |
-          STATUS=$(aws elasticbeanstalk describe-environments \
-            --application-name ${{ env.EB_APPLICATION_NAME_PROD }} \
-            --environment-names ${{ env.EB_ENVIRONMENT_NAME_PROD }} \
-            --query "Environments[0].Status" \
-            --output text)
-          HEALTH=$(aws elasticbeanstalk describe-environments \
-            --application-name ${{ env.EB_APPLICATION_NAME_PROD }} \
-            --environment-names ${{ env.EB_ENVIRONMENT_NAME_PROD }} \
-            --query "Environments[0].Health" \
-            --output text)
-          echo "Deployment status: $STATUS"
+      # - name: Get deployment status
+      #   run: |
+      #     STATUS=$(aws elasticbeanstalk describe-environments \
+      #       --application-name ${{ env.EB_APPLICATION_NAME_PROD }} \
+      #       --environment-names ${{ env.EB_ENVIRONMENT_NAME_PROD }} \
+      #       --query "Environments[0].Status" \
+      #       --output text)
+      #     HEALTH=$(aws elasticbeanstalk describe-environments \
+      #       --application-name ${{ env.EB_APPLICATION_NAME_PROD }} \
+      #       --environment-names ${{ env.EB_ENVIRONMENT_NAME_PROD }} \
+      #       --query "Environments[0].Health" \
+      #       --output text)
+      #     echo "Deployment status: $STATUS"
