@@ -7,7 +7,7 @@ on:
       
 env:
   AWS_REGION: us-east-1 # AWS region
-  S3_BUCKET: projects-artifacts-miaaax # S3 bucket for storing the build artifacts
+  S3_BUCKET: bucket-artifacts-miong # S3 bucket for storing the build artifacts
   EB_APPLICATION_NAME_PROD: myapp # Elastic Beanstalk application name
   EB_ENVIRONMENT_NAME_PROD: myapp-env # Elastic Beanstalk environment name
   EB_APPLICATION_NAME_STAGE: myapp-stage # Elastic Beanstalk application name
