@@ -11,7 +11,7 @@ env:
   EB_APPLICATION_NAME_PROD: myapp # Elastic Beanstalk application name
   EB_ENVIRONMENT_NAME_PROD: myapp-env # Elastic Beanstalk environment name
   EB_APPLICATION_NAME_STAGE: myapp-stage # Elastic Beanstalk application name
-  EB_ENVIRONMENT_NAME_STAGE: Myapp-stage-env # Elastic Beanstalk environment name
+  EB_ENVIRONMENT_NAME_STAGE: myapp-stage-env # Elastic Beanstalk environment name
   PIPELINE_ID: ${{ github.run_id }}
 
 jobs:
