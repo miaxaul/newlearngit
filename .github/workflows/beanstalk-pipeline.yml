@@ -4,14 +4,14 @@ on:
   push:
     branches:
       - master
-      
+
 env:
-  AWS_REGION: us-east-1 
+  AWS_REGION: us-east-1
   S3_BUCKET: artifacts-mio-miu
-  EB_APPLICATION_NAME_STAGE: myapp 
-  EB_ENVIRONMENT_NAME_PROD: myapp-env 
-  EB_APPLICATION_NAME_DEV: myapp-stage 
-  EB_ENVIRONMENT_NAME_STAGE: myapp-stage-env 
+  EB_APPLICATION_NAME_STAGE: myapp
+  EB_ENVIRONMENT_NAME_PROD: myapp-env
+  EB_APPLICATION_NAME_DEV: myapp-stage
+  EB_ENVIRONMENT_NAME_STAGE: myapp-stage-env
   PIPELINE_ID: ${{ github.run_id }}
   IMAGE_TAG: ${{ github.run_id }}
   CONTAINER_NAME: myapp
@@ -70,35 +70,6 @@ jobs:
           }
           EOF
 
-      # - name: Generate ECS task definition file
-      #   env:
-      #     IMAGE_TAG: ${{ github.sha }}
-      #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-      #     run: |
-      #       cat > task-def.json <<EOF
-      #       {
-      #         "family": "${TASK_FAMILY}",
-      #         "networkMode": "awsvpc",
-      #         "cpu": "256",
-      #         "memory": "512",
-      #         "requiresCompatibilities": ["FARGATE"],
-      #         "executionRoleArn": "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/LabRole",
-      #         "containerDefinitions": [
-      #           {
-      #             "name": "${CONTAINER_NAME}",
-      #             "image": "${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG}",
-      #             "essential": true,
-      #             "portMappings": [
-      #               {
-      #                 "containerPort": 3000,
-      #                 "protocol": "tcp"
-      #               }
-      #             ]
-      #           }
-      #         ]
-      #       }
-      #       EOF
-
       - name: Zip Artifacts
         run: |
           zip -r artifacts.zip .
@@ -109,7 +80,7 @@ jobs:
           aws s3 cp Dockerrun.aws.json s3://${{ env.S3_BUCKET }}/Dockerrun.aws.json-${{ env.PIPELINE_ID }}
 
   deploy-dev:
-    name: Development Deployment # Deploy to beanstalk from source
+    name: Development Deployment
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -121,7 +92,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
-          
+
       - name: Create new Elastic Beanstalk application version
         run: |
           aws elasticbeanstalk create-application-version \
@@ -143,23 +114,8 @@ jobs:
             --application-name ${{ env.EB_APPLICATION_NAME_DEV }} \
             --environment-name ${{ env.EB_ENVIRONMENT_NAME_STAGE }}
 
-      # - name: Get deployment status
-      #   run: |
-      #     STATUS=$(aws elasticbeanstalk describe-environments \
-      #       --application-name ${{ env.EB_APPLICATION_NAME_DEV }} \
-      #       --environment-names ${{ env.EB_ENVIRONMENT_NAME_STAGE }} \
-      #       --query "Environments[0].Status" \
-      #       --output text)
-      #     HEALTH=$(aws elasticbeanstalk describe-environments \
-      #       --application-name ${{ env.EB_APPLICATION_NAME_DEV }} \
-      #       --environment-names ${{ env.EB_ENVIRONMENT_NAME_STAGE }} \
-      #       --query "Environments[0].Health" \
-      #       --output text)
-      #     echo "Deployment status: $STATUS"
-      #     echo "Deployment health: $HEALTH"
-
   deploy-stage:
-    name: Staging Deployment # Deploy to beanstalk from image
+    name: Staging Deployment
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -171,7 +127,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ env.AWS_REGION }}
-          
+
       - name: Create new Elastic Beanstalk application version
         run: |
           aws elasticbeanstalk create-application-version \
@@ -179,48 +135,24 @@ jobs:
             --version-label ${{ env.PIPELINE_ID }} \
             --source-bundle S3Bucket="${{ env.S3_BUCKET }}",S3Key="artifacts-${{ env.PIPELINE_ID }}.zip" \
             --description "Deployment from GitHub Actions - ${{ github.run_id }}"
-      
+
       - name: Deploy to Elastic Beanstalk
         run: |
           aws elasticbeanstalk update-environment \
             --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
             --environment-name ${{ env.EB_ENVIRONMENT_NAME_PROD }} \
             --version-label ${{ env.PIPELINE_ID }}
-      
+
       - name: Wait for deployment to complete
         run: |
           aws elasticbeanstalk wait environment-updated \
             --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
             --environment-name ${{ env.EB_ENVIRONMENT_NAME_PROD }}
 
-      # - name: Get deployment status
-      #   run: |
-      #     STATUS=$(aws elasticbeanstalk describe-environments \
-      #       --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
-      #       --environment-names ${{ env.EB_ENVIRONMENT_NAME_PROD }} \
-      #       --query "Environments[0].Status" \
-      #       --output text)
-      #     HEALTH=$(aws elasticbeanstalk describe-environments \
-      #       --application-name ${{ env.EB_APPLICATION_NAME_STAGE }} \
-      #       --environment-names ${{ env.EB_ENVIRONMENT_NAME_PROD }} \
-      #       --query "Environments[0].Health" \
-      #       --output text)
-      #     echo "Deployment status: $STATUS"
-
   deploy-to-ecs:
-    name: Deploy to ECS (Production) # Deploy to ECS from image
+    name: Deploy to ECS (Production)
     needs: [deploy-dev, deploy-stage]
     runs-on: ubuntu-latest
-
-    # env:
-      # PIPELINE_ID: ${{ github.run_id }}
-      # IMAGE_TAG: ${{ env.PIPELINE_ID }}
-      # CONTAINER_NAME: myapp-container
-      # ECS_CLUSTER: ${{ secrets.ECS_CLUSTER_NAME }}
-      # ECS_SERVICE: ${{ secrets.ECS_SERVICE_NAME }}
-      # TASK_FAMILY: myapp-task
-      # EXECUTION_ROLE_ARN: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/LabRole
-      # TASK_DEF_ARN: arn:aws:ecs:us-east-1:381491850253:task-definition/myapp-task:4
 
     steps:
       - name: Configure AWS credentials
@@ -286,7 +218,7 @@ jobs:
       - name: Print ECS deployment status
         run: |
           echo "Deployed to ECS with task: ${{ env.TASK_DEF_ARN }}"
-          
+
   deploy-to-eks:
     name: Deploy to EKS (Production)
     needs: [deploy-dev, deploy-stage]
@@ -306,42 +238,3 @@ jobs:
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
-        with:
-          version: 'latest'
-
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig \
-            --region us-east-1 \
-            --name ${{ secrets.EKS_CLUSTER_NAME }}
-
-      - name: Set image in Kubernetes deployment
-        run: |
-          kubectl set image deployment/${{ env.CONTAINER_NAME }} \
-            ${{ env.CONTAINER_NAME }}=${{ steps.login-ecr.outputs.registry }}/${{ env.EB_APPLICATION_NAME_STAGE }}:${{ env.IMAGE_TAG }}
-
-      - name: Rollout status
-        run: |
-          kubectl rollout status deployment/${{ env.CONTAINER_NAME }}
-
-  deploy-to-eks:
-    name: Deploy to EKS
-    needs: deploy-to-ecs
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Update kubeconfig
-        run: |
-          aws eks update-kubeconfig --name your-eks-cluster-name
-
-      - name: Deploy to EKS
-        run: |
-          kubectl apply -f k8s/deployment.yaml
