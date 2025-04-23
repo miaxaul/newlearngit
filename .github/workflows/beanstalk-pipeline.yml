@@ -221,7 +221,7 @@ jobs:
 
   deploy-to-eks:
     name: Deploy to EKS (Production)
-    needs: [deploy-dev, deploy-stage]
+    needs: deploy-to-ecs
     runs-on: ubuntu-latest
 
     steps:
