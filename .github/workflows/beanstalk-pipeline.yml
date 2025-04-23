@@ -7,7 +7,7 @@ on:
       
 env:
   AWS_REGION: us-east-1 
-  S3_BUCKET: artifacts-miong-ember 
+  S3_BUCKET: artifacts-mio-miu
   EB_APPLICATION_NAME_STAGE: myapp 
   EB_ENVIRONMENT_NAME_PROD: myapp-env 
   EB_APPLICATION_NAME_DEV: myapp-stage 
