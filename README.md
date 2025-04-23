@@ -17,9 +17,11 @@ Before using this pipeline, ensure you have the following set up:
 - GitHub repository secrets for AWS credentials, like `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_TOKEN_SESSION`.
 - A Dockerfile in the root of your repository for building the image.
 
+
 **Author:**  
 - **Betuah**  
   - Creator of the entire project including Docker configurations, app.json, and initial setup.
+    
 **Contributor:**  
 - **Brieliana** 
   - Developed and implemented CI/CD workflow for ECS and EKS deployment automation using GitHub Actions.
