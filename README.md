@@ -6,7 +6,7 @@ This repository contains a CI/CD pipeline set up using GitHub Actions. The pipel
 
 The workflow is divided into the following four main steps:
 1. **Build and Push Docker Image**
-2. **Deploy to Staging and Production (ECS)**
+2. **Deploy to Staging and Production**
 3. **Deploy to ECS**
 4. **Deploy to EKS**
 
