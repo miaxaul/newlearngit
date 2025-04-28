@@ -23,5 +23,5 @@ Before using this pipeline, ensure you have the following set up:
   - Creator of the entire project including Docker configurations, app.json, and initial setup.
     
 **Contributor:**  
-- **Brieliana** 
+- **Brielliana** 
   - Developed and implemented CI/CD workflow for ECS and EKS deployment automation using GitHub Actions.
