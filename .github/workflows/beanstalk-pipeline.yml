@@ -7,7 +7,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  S3_BUCKET: artifacts-miax-miu
+  S3_BUCKET: bucket-artifacts-mimix
   EB_APPLICATION_NAME_STAGE: myapp
   EB_ENVIRONMENT_NAME_PROD: myapp-env
   EB_APPLICATION_NAME_DEV: myapp-stage
@@ -238,3 +238,22 @@ jobs:
 
       - name: Setup kubectl
         uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+      - name: Deploy to EKS
+        run: |
+          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f k8s/service.yaml
+
+      - name: Wait for deployment to complete
+        run: |
+          kubectl rollout status deployment/${{ env.CONTAINER_NAME }} -n default
+
+      - name: Get service info
+        run: |
+          kubectl get svc -n default
