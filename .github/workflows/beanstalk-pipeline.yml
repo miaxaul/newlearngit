@@ -247,7 +247,7 @@ jobs:
 
       - name: Deploy to EKS
         run: |
-          kubectl apply -f k8s/deployment.yaml
+          kubectl apply -f newlearngit/deployment.yaml
 
       - name: Wait for deployment to complete
         run: |
