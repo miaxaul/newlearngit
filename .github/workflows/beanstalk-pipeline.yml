@@ -219,7 +219,7 @@ jobs:
         run: |
           echo "Deployed to ECS with task: ${{ env.TASK_DEF_ARN }}"
 
-    deploy-to-eks:
+  deploy-to-eks:
     name: Deploy to EKS (Production)
     needs: deploy-to-ecs
     runs-on: ubuntu-latest
